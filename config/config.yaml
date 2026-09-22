@@ -1,0 +1,122 @@
+# =============================================================================
+# AI Visual Screen Inspection System — Main Configuration
+# =============================================================================
+# Every tunable value used by the pipeline lives here. Do NOT hardcode paths,
+# thresholds, or hyperparameters in source files — read them from this file
+# via src/utils/config_loader.py.
+# =============================================================================
+
+project:
+  name: "AI Visual Screen Inspection"
+  version: "0.1.0-mvp"
+  university_project: "Manufacturing Practice"
+
+# -----------------------------------------------------------------------------
+# Paths (all relative to project root)
+# -----------------------------------------------------------------------------
+paths:
+  dataset_raw: "datasets/raw"
+  dataset_processed: "datasets/processed"
+  models_dir: "models"
+  results_dir: "results"
+  sample_images: "sample_images"
+  reports_dir: "results/reports"
+
+# -----------------------------------------------------------------------------
+# Device recognition (smartphone vs laptop)
+# -----------------------------------------------------------------------------
+device_recognition:
+  # "heuristic" works out of the box with no training (aspect-ratio / shape
+  # based). "yolo_cls" uses a trained classifier once you have one — see
+  # training/train_device_classifier.py.
+  mode: "yolo_cls"          # heuristic | yolo_cls
+  model_path: "models/device_classifier.pt"
+  confidence_threshold: 0.5
+  classes: ["smartphone", "laptop"]
+
+# -----------------------------------------------------------------------------
+# Screen localization
+# -----------------------------------------------------------------------------
+screen_detection:
+  # "contour" is a classical-CV baseline (works without any dataset/training).
+  # "yolo" uses a trained screen-region detector once available.
+  mode: "contour"             # contour | yolo
+  model_path: "models/screen_detector.pt"
+  min_area_ratio: 0.08        # smallest screen area as a fraction of image area
+  max_area_ratio: 0.97
+  confidence_threshold: 0.4
+
+# -----------------------------------------------------------------------------
+# Defect detection / classification
+# -----------------------------------------------------------------------------
+damage_detection:
+  # "heuristic" = classical CV baseline (edge/line/blob analysis), works with
+  # zero training data so the MVP is usable on day one.
+  # "yolo" = trained YOLOv8 detector (recommended once a dataset is prepared,
+  # see DATASET_SETUP.md and training/train.py).
+  mode: "yolo"           # heuristic | yolo
+  model_path: "models/defect_yolo.pt"
+  image_size: 640
+  confidence_threshold: 0.45
+  # below this, defects are reported as "uncertain" rather than confirmed
+  uncertain_confidence_threshold: 0.55
+  iou_threshold: 0.45
+  max_detections: 50
+  classes:
+    - "no_defect"
+    - "scratch"
+    - "crack"
+    - "broken_glass"
+    - "dead_pixel"
+    - "black_spot"
+    - "display_line"
+    - "discoloration"
+    - "backlight_bleed"
+    - "other_damage"
+
+# -----------------------------------------------------------------------------
+# Preprocessing
+# -----------------------------------------------------------------------------
+preprocessing:
+  resize_width: 1024          # longest side, keeps aspect ratio
+  normalize: true
+  auto_contrast: false        # off by default: can wash out faint scratches
+  denoise: false               # off by default: can remove hairline scratches
+  min_resolution_px: 300      # below this we warn about image quality
+  blur_variance_threshold: 60.0   # Laplacian-variance below this => "blurry" warning
+  glare_brightness_threshold: 245 # mean pixel value above this => "glare" warning
+
+# -----------------------------------------------------------------------------
+# Training hyperparameters (training/train.py reads these)
+# -----------------------------------------------------------------------------
+training:
+  base_model: "yolov8n.pt"     # nano model: fastest on CPU/MPS, good for MVP
+  epochs: 50
+  batch_size: 16
+  image_size: 640
+  learning_rate: 0.01
+  patience: 20                 # early-stopping patience
+  device: "auto"                # auto | cpu | mps | 0 (cuda index)
+  train_val_test_split: [0.7, 0.2, 0.1]
+  seed: 42
+
+# -----------------------------------------------------------------------------
+# Severity rules — see src/severity/severity_rules.yaml for the full,
+# independently editable rule set used by src/severity/severity.py
+# -----------------------------------------------------------------------------
+severity:
+  rules_file: "src/severity/severity_rules.yaml"
+
+# -----------------------------------------------------------------------------
+# Reporting
+# -----------------------------------------------------------------------------
+reporting:
+  formats: ["json", "pdf"]
+  company_name: "University Manufacturing Practice Project"
+
+# -----------------------------------------------------------------------------
+# Screen inspection mode (optional controlled test-pattern capture)
+# -----------------------------------------------------------------------------
+screen_test_pattern:
+  enabled: true
+  colors: ["white", "black", "red", "green", "blue"]

@@ -1,0 +1,46 @@
+# =============================================================================
+# Severity heuristic rules
+# =============================================================================
+# IMPORTANT: These are ENGINEERING HEURISTICS chosen by the project team, not
+# a scientifically or medically validated grading standard. They exist so the
+# system can produce a consistent, explainable PASS/ATTENTION/FAIL result.
+# If a dataset with human-annotated severity labels becomes available, replace
+# this rule-based module with a trained classifier and update MODEL_CARD.md.
+# =============================================================================
+
+# Per-defect-class base severity weight (before counting/size adjustments)
+defect_base_weight:
+  no_defect: 0
+  scratch: 1
+  dead_pixel: 1
+  black_spot: 1
+  discoloration: 2
+  display_line: 2
+  backlight_bleed: 2
+  crack: 3
+  broken_glass: 4
+  other_damage: 2
+
+# A defect's bounding-box area as a fraction of the screen area, above which
+# it is treated as "large" and its weight is boosted.
+large_area_ratio_threshold: 0.05
+large_area_weight_bonus: 2
+
+# If more than this many *confirmed* (non-uncertain) defects are found, the
+# case is escalated by one severity level.
+multi_defect_count_threshold: 2
+multi_defect_weight_bonus: 1
+
+# Final numeric score -> severity label thresholds.
+# score = sum of (base_weight [+ bonuses]) over all confirmed defects
+severity_thresholds:
+  low_max: 2        # score <= 2  -> Low
+  medium_max: 5      # 2 < score <= 5 -> Medium
+  # score > medium_max -> High
+
+# Inspection result thresholds
+result_rules:
+  pass_if_no_confirmed_defects: true
+  attention_if_only_uncertain_defects: true   # "possible defect" -> ATTENTION, not FAIL
+  fail_severity_levels: ["High"]
+  attention_severity_levels: ["Low", "Medium"]

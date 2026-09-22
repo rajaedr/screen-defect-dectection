@@ -1,0 +1,14 @@
+# Optional: conda/mamba environment (alternative to the venv used by setup.sh).
+#
+#   conda env create -f environment.yml
+#   conda activate screen-defect-detection
+#
+# If you're not already a conda user, just use setup.sh instead — it's simpler.
+name: screen-defect-detection
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - -r requirements.txt

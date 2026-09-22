@@ -1,0 +1,43 @@
+# =============================================================================
+# AI Visual Screen Inspection — Python dependencies
+# Tested target: macOS, Python 3.11+ (also runs on 3.10/3.12), CPU or Apple
+# Silicon (MPS). No NVIDIA GPU required.
+# =============================================================================
+
+# --- Core app / UI ---
+streamlit>=1.36,<2.0
+
+# --- Computer vision / numerics ---
+opencv-python-headless>=4.9,<5.0
+numpy>=1.26,<3.0
+pillow>=10.2,<12.0
+
+# --- Config ---
+pyyaml>=6.0,<7.0
+
+# --- Deep learning (YOLOv8) — CPU/MPS build; do NOT pin a CUDA-specific
+# wheel here so this installs cleanly on macOS. torch pulls MPS support
+# automatically on Apple Silicon.
+torch>=2.2,<3.0
+torchvision>=0.17,<1.0
+ultralytics>=8.2,<9.0
+
+# --- Reporting ---
+reportlab>=4.1,<5.0
+
+# --- Evaluation / metrics (used by training/evaluation.py, also handy
+# standalone for confusion-matrix plotting) ---
+matplotlib>=3.8,<4.0
+scikit-learn>=1.4,<2.0
+pandas>=2.2,<3.0
+
+# --- Testing ---
+pytest>=8.0,<9.0
+
+# =============================================================================
+# Optional extra, NOT required for the app itself — only needed if you run
+# datasets/download_datasets.py to pull datasets from Roboflow automatically:
+#     pip install roboflow
+# (requires a free Roboflow account + API key; see DATASET_SETUP.md)
+# =============================================================================
+easyocr
